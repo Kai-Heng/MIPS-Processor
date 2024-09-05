@@ -1,0 +1,153 @@
+------------------------------------
+-- Kai Heng Gan
+-- Cyber Security Engineering
+-- Iowa State University
+------------------------------------
+
+-- aluLogic.vhd
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity aluLogic is
+    port(   ALUOp                           : in std_logic_vector(3 downto 0);
+            funct                           : in std_logic_vector(5 downto 0);
+            ALUControl                      : out std_logic_vector(4 downto 0));
+end aluLogic;
+
+architecture alu of aluLogic is
+begin
+    process (ALUOp, funct)
+    begin
+	-- R-type
+        if(ALUOp = "0000") then
+	   -- add
+	   if(funct = "100000") then
+		ALUControl <= "00010";
+	   end if;
+
+	   -- addu
+	   if (funct = "100001") then
+		ALUControl <= "00010";
+	   end if;
+
+	   -- and
+	   if (funct = "100100") then
+		ALUControl <= "00000";
+	   end if;
+
+	   -- nor
+	   if (funct = "100111") then
+		ALUControl <= "01100";
+	   end if;
+
+	   -- xor
+	   if (funct = "100110") then
+		ALUControl <= "00011";
+	   end if;
+
+	   -- or
+	   if (funct = "100101") then
+		ALUControl <= "00001";
+	   end if;
+
+	   -- slt
+	   if (funct = "101010") then
+		ALUControl <= "00111";
+	   end if;
+
+	   -- sll
+	   if (funct = "000000") then
+		ALUControl <= "01000";
+	   end if;
+
+	   -- srl 
+	   if (funct = "000010") then
+		ALUControl <= "01001";
+	   end if;
+
+	   -- sra
+	   if (funct = "000011") then
+		ALUControl <= "01010";
+	   end if;
+
+	   -- sub 
+	   if (funct = "100010") then
+		ALUControl <= "00110";
+	   end if;
+
+	   -- subu
+	   if (funct = "100011") then
+		ALUControl <= "00110";
+	   end if;
+
+	   -- jr
+	   if (funct = "001000") then
+		ALUControl <= "00100";
+	   end if;
+	end if;
+
+	-- lw, sw, addi, addiu
+	if(ALUOP = "0001") then
+	    ALUControl <= "00010";
+        end if;
+
+	-- andi
+        if(ALUOP = "0010") then  
+	    ALUControl <= "00000";
+	end if;
+
+	-- ori
+        if(ALUOP = "0011") then  
+	    ALUControl <= "00001";
+	end if;
+
+	-- xori
+        if(ALUOP = "0100") then
+	    ALUControl <= "00011";
+	end if;
+
+	-- bgez | bgezal
+        if(ALUOP = "0101") then
+	    ALUControl <= "00100";
+	end if;
+
+	-- bgtz
+        if(ALUOP = "0110") then
+	    ALUControl <= "00101";
+	end if;
+
+        -- blez
+        if(ALUOP = "0111") then  
+	    ALUControl <= "01011";
+	end if;
+
+	-- beq
+        if(ALUOP = "1000") then 
+	    ALUControl <= "01101";  
+	end if;
+
+	-- bne
+        if(ALUOP = "1001") then 
+	    ALUControl <= "01110"; 
+	end if;
+
+	-- bltz | bltzal
+        if(ALUOP = "1010") then 
+	    ALUControl <= "01111";     
+
+	end if;
+
+	-- slti
+        if(ALUOP = "1011") then 
+	    ALUControl <= "00111";     
+
+	end if;
+
+	-- lui
+        if(ALUOP = "1100") then 
+	    ALUControl <= "10000";     
+	end if;
+
+    end process;
+end alu;

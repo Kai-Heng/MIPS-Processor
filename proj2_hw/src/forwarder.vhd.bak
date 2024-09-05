@@ -1,0 +1,96 @@
+------------------------------------
+-- Kai Heng Gan
+-- Cyber Security Engineering
+-- Iowa State University
+------------------------------------
+
+-- forwarder.vhd
+
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity forwarder is
+  port(regWriteEXMEM   	: in std_logic;
+       regWriteMEMWB   	: in std_logic;
+       Branch			: in std_logic;
+       Jr			: in std_logic;
+       rsRegIFID		: in std_logic_vector(4 downto 0);
+       rtRegIFID		: in std_logic_vector(4 downto 0);
+       rsRegIDEX		: in std_logic_vector(4 downto 0);
+       rtRegIDEX		: in std_logic_vector(4 downto 0);
+       rtRegEXMEM		: in std_logic_vector(4 downto 0);
+       writeRegEXMEM		: in std_logic_vector(4 downto 0);
+       writeRegMEMWB		: in std_logic_vector(4 downto 0);
+       forwardA			: out std_logic; -- Use forward mux data
+       forwardB       		: out std_logic; -- Use forward mux data
+       forwardAMuxSel		: out std_logic; --Forward A mux selector
+       forwardBMuxSel		: out std_logic; --Forward B mux selector
+       forwardRs		: out std_logic; --Use forward mux data
+       forwardRt		: out std_logic; --Use forward mux data
+       forwardRsMuxSel		: out std_logic; --Forward Rs mux selector
+       forwardRtMuxSel		: out std_logic); --Forward Rt mux selector
+end forwarder;
+
+architecture behavior of forwarder is
+
+signal s_forwardA,s_forwardB,s_forwardAMuxSel,s_forwardBMuxSel,s_forwardRs,s_forwardRt,s_forwardRsMuxSel,s_forwardRtMuxSel : std_logic := '0';
+
+begin
+  process (regWriteEXMEM,regWriteMEMWB,Branch,Jr,rsRegIFID,rtRegIFID,rsRegIDEX,rtRegIDEX,rtRegEXMEM,writeRegEXMEM,writeRegMEMWB)
+  begin
+    -- EX hazard, forward EX/MEM to ALU input A
+    if((regWriteEXMEM = '1') and (writeRegEXMEM /= "00000") and (writeRegEXMEM = rsRegIDEX)) then
+      s_forwardAMuxSel <= '1';
+      s_forwardA <= '1';
+    elsif((regWriteMEMWB = '1') and (writeRegMEMWB /= "00000") and (writeRegMEMWB = rsRegIDEX)) then
+    -- MEM hazard, forward MEM/WB to ALU input A
+      s_forwardAMuxSel <= '0';
+      s_forwardA <= '1';
+    else
+      s_forwardA <= '0';
+    end if;
+    -- EX hazard, forward EX/MEM to ALU input B
+    if((regWriteEXMEM = '1') and (writeRegEXMEM /= "00000") and (writeRegEXMEM = rtRegIDEX)) then
+      s_forwardBMuxSel <= '1';
+      s_forwardB <= '1';
+    elsif((regWriteMEMWB = '1') and (writeRegMEMWB /= "00000") and (writeRegMEMWB = rtRegIDEX)) then
+    -- MEM hazard, forward MEM/WB to ALU input B
+      s_forwardBMuxSel <= '0';
+      s_forwardB <= '1';
+    else
+      s_forwardB <= '0';
+    end if;
+    -- Forward from EX/MEM to Rs mux in decode stage
+    if(((Branch = '1') or (Jr = '1')) and (writeRegEXMEM /= "00000") and (writeRegEXMEM = rsRegIFID)) then
+      s_forwardRsMuxSel <= '1';
+      s_forwardRs <= '1';
+    elsif(((Branch = '1') or (Jr = '1')) and (writeRegMEMWB /= "00000") and (writeRegMEMWB = rsRegIFID)) then
+    -- Forward from MEM/WB to Rs mux in decode stage
+      s_forwardRsMuxSel <= '0';
+      s_forwardRs <= '1';
+    else
+      s_forwardRs <= '0';
+    end if;
+    -- Forward from EX/MEM to Rt mux in decode stage
+    if((Branch = '1') and (writeRegEXMEM /= "00000") and (writeRegEXMEM = rtRegIFID)) then
+      s_forwardRtMuxSel <= '1';
+      s_forwardRt <= '1';
+    elsif((Branch = '1') and (writeRegMEMWB /= "00000") and (writeRegMEMWB = rtRegIFID)) then
+    -- Forward from MEM/WB to Rt mux in decode stage
+      s_forwardRtMuxSel <= '0';
+      s_forwardRt <= '1';
+    else
+      s_forwardRt <= '0';
+    end if;
+  end process;
+  forwardA <= s_forwardA;
+  forwardB <= s_forwardB;
+  forwardAMuxSel <= s_forwardAMuxSel;
+  forwardBMuxSel <= s_forwardBMuxSel;
+  forwardRs <= s_forwardRs;
+  forwardRt <= s_forwardRt;
+  forwardRsMuxSel <= s_forwardRsMuxSel;
+  forwardRtMuxSel <= s_forwardRtMuxSel;
+end behavior;
